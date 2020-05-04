@@ -1,0 +1,33 @@
+CREATE TABLE IF NOT EXISTS gpus (
+	name text,
+	code int,
+	nup int,
+	freq int,
+	manf text,
+	PRIMARY KEY (code)
+);
+
+CREATE TABLE IF NOT EXISTS mrers (
+	name text, 
+	code int,
+	year int,
+	site text,
+	PRIMARY KEY (code)
+);
+ 
+CREATE TABLE IF NOT EXISTS mmrs (
+	code int,
+	memory int,
+	type text,
+	band float,
+	PRIMARY KEY (code)
+);
+ 
+CREATE TABLE IF NOT EXISTS gcs (
+	name text,
+	code int,
+	manCode int,
+	gpuCode int,
+	memCode int,
+	PRIMARY KEY (code)
+);

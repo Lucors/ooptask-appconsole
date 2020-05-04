@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding="utf-8" standalone="yes"?>
+
+<database>
+	<gpuList>
+		<gpu name="Radeon RX 560" code='1'>
+			<gpuInfo nup="896" freq="1175" manf="AMD"/>
+		</gpu>
+		<gpu name="GeForce GT 710" code='2'>
+			<gpuInfo nup="192" freq="954" manf="NVIDIA"/>
+		</gpu>
+		<gpu name="Intel Dual GPU 1321" code='3'>
+			<gpuInfo nup="673" freq="1102" manf="INTEL"/>
+		</gpu>
+	</gpuList>
+	<memList>
+		<mem code="1">
+			<memInfo memory="4" type="GDDR3" bandwidth="12.800000"/>
+		</mem>
+		<mem code="2">
+			<memInfo memory="3" type="GDDR5" bandwidth="40.000000"/>
+		</mem>
+		<mem code="3">
+			<memInfo memory="9" type="DDR2" bandwidth="10.200000"/>
+		</mem>
+	</memList>
+	<manfList>
+		<manf name="Palit" code="1">
+			<manfInfo year="1998" site="palit.com"/>
+		</manf>
+		<manf name="MSI" code="2">
+			<manfInfo year="1987" site="msi.com"/>
+		</manf>
+		<manf name="NSpeed" code="3">
+			<manfInfo year="2013" site="nspd.com"/>
+		</manf>
+	</manfList>
+	<gcList>
+		<gc name="PASSIVE" code="1">
+			<gcInfo manCode="1" gpuCode="1" memCode="1"/>
+		</gc>
+		<gc name="Silent LP" code="2">
+			<gcInfo manCode="2" gpuCode="2" memCode="2"/>
+		</gc>
+		<gc name="Power UP" code="3">
+			<gcInfo manCode="1" gpuCode="1" memCode="1"/>
+		</gc>
+	</gcList>
+</database>
