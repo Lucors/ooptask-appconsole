@@ -95,11 +95,11 @@ private:
     //Тип памяти
     std::string *type;
 public:
-    MMR(int, unsigned short, std::string, double);
+    MMR(int, unsigned short, std::string, double, int);
     MMR();
     ~MMR();
     void defPointers();
-    void setMMRInfo(int, unsigned short, std::string, double);
+    void setMMRInfo(int, unsigned short, std::string, double, int);
     void setMemory(unsigned short);
     void setBandW(double);
     void setType(std::string);
@@ -215,7 +215,7 @@ class GCard : public Base {
 private:
     std::string *correctName;
     std::string *image;
-    int *codeMre, *codeGP, *codeMry;
+    int *codeMRER, *codeGPU, *codeMMR;
     GPU *currGPU;
     MRER *currMRER;
     MMR *currMMR;
@@ -231,15 +231,15 @@ public:
     //SET Функции
     void setGCInfo (std::string, int, GPU*, MRER*, MMR*);
     void setImg (std::string);
-    void setCodeManre (int, BaseList <MRER>*);
+    void setCodeMRER (int, BaseList <MRER>*);
     void setCodeGPU (int, BaseList <GPU>*);
-    void setCodeMemory (int, BaseList <MMR>*);
+    void setCodeMMR (int, BaseList <MMR>*);
     //GET Функции
     std::string getInfo();
     std::string *getImg();
-    int *getCodeManre();
+    int *getCodeMRER();
     int *getCodeGPU();
-    int *getCodeMemory();
+    int *getCodeMMR();
     //FIND Функции
     void findGPU(BaseList <GPU>*);
     void findMRER(BaseList <MRER>*);
@@ -290,10 +290,10 @@ public:
     bool checkListGC ();
     bool getSettingStat ();
     //ADD NEW ELEMENT
-    void addNewGC (std::string, int, int, int, int);
-    void addNewGPU (std::string, int, int, int, std::string);
-    void addNewMRER (std::string, int, unsigned short, std::string);
-    void addNewMMR (int, unsigned short, std::string, double);
+    void addNewGC (std::string = "Неизвестно", int = 0, int = 0, int = 0, int = 0);
+    void addNewGPU (std::string = "Неизвестно", int = 0, int = 0, int = 0, std::string = "Неизвестно");
+    void addNewMRER (std::string = "Неизвестно", int = 0, unsigned short = 0, std::string = "Неизвестно");
+    void addNewMMR (int = 0, unsigned short = 0, std::string = "Неизвестно", double = 0.0, int = 0);
     //SET LIST
     void setListGPU (BaseList <GPU>*);
     void setListMRER (BaseList <MRER>*);

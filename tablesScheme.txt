@@ -1,33 +1,32 @@
-CREATE TABLE IF NOT EXISTS gpus (
-	name text,
-	code int,
-	nup int,
-	freq int,
-	manf text,
-	PRIMARY KEY (code)
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS GPU (
+	code INTEGER PRIMARY KEY,
+	name TEXT UNIQUE,
+	nup INTEGER,
+	freq INTEGER,
+	mrer TEXT
 );
 
-CREATE TABLE IF NOT EXISTS mrers (
-	name text, 
-	code int,
-	year int,
-	site text,
-	PRIMARY KEY (code)
+CREATE TABLE IF NOT EXISTS MRER (
+	code INTEGER PRIMARY KEY,
+	name TEXT UNIQUE,
+	fYear SMALLINT UNSIGNED,
+	site TEXT
 );
  
-CREATE TABLE IF NOT EXISTS mmrs (
-	code int,
-	memory int,
-	type text,
-	band float,
-	PRIMARY KEY (code)
+CREATE TABLE IF NOT EXISTS MMR (
+	code INTEGER PRIMARY KEY,
+	memory SMALLINT UNSIGNED,
+	bandwidth DOUBLE,
+	freq INTEGER,
+	type TEXT
 );
  
-CREATE TABLE IF NOT EXISTS gcs (
-	name text,
-	code int,
-	manCode int,
-	gpuCode int,
-	memCode int,
-	PRIMARY KEY (code)
+CREATE TABLE IF NOT EXISTS GC (
+	code INTEGER PRIMARY KEY,
+	name TEXT,
+	mrerCode INTEGER REFERENCES MRER(code),
+	gpuCode INTEGER REFERENCES GPU(code),
+	mmrCode INTEGER REFERENCES MMR(code)
 );

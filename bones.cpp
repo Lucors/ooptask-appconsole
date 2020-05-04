@@ -3,7 +3,7 @@
 #include <vector>
 #include <iomanip>
 #include "bones.h"
-#include "funcs.h"
+#include "funcs.hpp"
 #include <fstream>
 using namespace std;
 
@@ -121,7 +121,7 @@ using namespace std;
         strOut += "<gpuInfo ";
         strOut += "nup=\"" + to_string(*this->nup) + "\" ";
         strOut += "freq=\"" + to_string(*this->freq) + "\" ";
-        strOut += "manf=\"" + *this->mrer + "\"/>\n";
+        strOut += "mrer=\"" + *this->mrer + "\"/>\n";
 
         strOut += "\t\t";
         strOut += "</gpu>\n";
@@ -129,7 +129,7 @@ using namespace std;
         return strOut;
     }
     string GPU::printSQLquery (){
-        string strOut = "INSERT INTO gpus (name, code, nup, freq, manf) VALUES (";
+        string strOut = "INSERT INTO GPU (name, code, nup, freq, mrer) VALUES (";
         strOut += "'" + *this->name + "', " + to_string(*this->code) + ", " + to_string(*this->nup);
         strOut += ", " + to_string(*this->freq) + ", '" + *this->mrer + "');";
 
@@ -202,21 +202,21 @@ using namespace std;
         string strOut;
 
         strOut += "\t\t";
-        strOut += "<manf name=\"";
+        strOut += "<mrer name=\"";
         strOut += *this->name + "\" code=\"";
         strOut += to_string(*this->code) + "\">\n";
 
         strOut += "\t\t\t";
-        strOut += "<manfInfo ";
+        strOut += "<mrerInfo ";
         strOut += "year=\"" + to_string(*this->fYear) + "\" ";
         strOut += "site=\"" + *this->site + "\"/>\n";
 
         strOut += "\t\t";
-        strOut += "</manf>\n";
+        strOut += "</mrer>\n";
         return strOut;
     }
     string MRER::printSQLquery (){
-        string strOut = "INSERT INTO mrers (name, code, year, site) VALUES (";
+        string strOut = "INSERT INTO MRER (name, code, fYear, site) VALUES (";
         strOut += "'" + *this->name + "', " + to_string(*this->code) + ", " + to_string(*this->fYear);
         strOut += ", '" + *this->site + "');";
 
@@ -227,9 +227,9 @@ using namespace std;
 /////////////////////
 //MMR CLASS
 /////////////////////
-        MMR::MMR(int code, unsigned short memory, string type, double bandwidth){
+        MMR::MMR(int code, unsigned short memory, string type, double bandwidth, int freq){
             defPointers();
-            setMMRInfo(code, memory, type, bandwidth);
+            setMMRInfo(code, memory, type, bandwidth, freq);
         }
         MMR::MMR (){
             defPointers();
@@ -247,15 +247,17 @@ using namespace std;
             this->type = new string("Неизвестно");
             this->code = new int(-1);
             this->memory = new unsigned short(0);
-            this->bandwidth = new double (0.0);
+            this->bandwidth = new double(0.0);
+            this->freq = new int(0);
         }
         void MMR::setMMRInfo (int code, unsigned short memory, string type,
-                               double bandwidth){
+                               double bandwidth, int freq){
             *this->name = "Неизвестно";
             *this->code = code;
             *this->memory = memory;
             *this->bandwidth = bandwidth;
             *this->type = type;
+            *this->freq = freq;
         }
         void MMR::setMemory (unsigned short memory){
             *this->memory = memory;
@@ -273,6 +275,7 @@ using namespace std;
             tmpStr += fillTab(6,' ') + "Тип памяти: " + *type + "\n";
             tmpStr += fillTab(6,' ') + "Объем (Гб): " + to_string(*memory) + "\n";
             tmpStr += fillTab(6,' ') + "Пропуск. способность (Гбайт/сек): " + to_string(*bandwidth) + "\n";
+            tmpStr += fillTab(6,' ') + "Штатная частота (МГц): " + to_string(*freq) + "\n";
             tmpStr += fillTab(6,' ') + fillTab(38,'-') + "\n";
             return tmpStr;
         }
@@ -283,23 +286,24 @@ using namespace std;
             string strOut;
 
             strOut += "\t\t";
-            strOut += "<mem code=\"";
+            strOut += "<mmr code=\"";
             strOut += to_string(*this->code) + "\">\n";
 
             strOut += "\t\t\t";
-            strOut += "<memInfo ";
+            strOut += "<mmrInfo ";
             strOut += "memory=\"" + to_string(*this->memory) + "\" ";
             strOut += "type=\"" + *this->type + "\" ";
-            strOut += "bandwidth=\"" + to_string(*this->bandwidth) + "\"/>\n";
+            strOut += "bandwidth=\"" + to_string(*this->bandwidth) + "\" ";
+            strOut += "freq=\"" +  to_string(*this->freq) + "\"/>\n";
 
             strOut += "\t\t";
-            strOut += "</mem>\n";
+            strOut += "</mmr>\n";
             return strOut;
         }
         string MMR::printSQLquery (){
-            string strOut = "INSERT INTO mmrs (code, memory, type, band) VALUES (";
+            string strOut = "INSERT INTO MMR (code, memory, type, bandwidth, freq) VALUES (";
             strOut += to_string(*this->code) + ", " + to_string(*this->memory);
-            strOut += ", '" + *this->type + "', " + to_string(*this->bandwidth) + ");";
+            strOut += ", '" + *this->type + "', " + to_string(*this->bandwidth) + ", " + to_string(*this->freq) + ");";
 
             return strOut;
         }
@@ -335,9 +339,9 @@ using namespace std;
 
         *this->correctName = name;
         *this->name = *currMRER->getName() + ' ' + *currGPU->getName() + ' ' + name;
-        this->codeGP = currGPU->getCode();
-        this->codeMre = currMRER->getCode();
-        this->codeMry = currMMR->getCode();
+        this->codeGPU = currGPU->getCode();
+        this->codeMRER = currMRER->getCode();
+        this->codeMMR = currMMR->getCode();
     }
     GCard::~GCard (){
         delete this->name;
@@ -347,7 +351,7 @@ using namespace std;
     }
     void GCard::findGPU (BaseList <GPU> *GPUList){
         try {
-            GPU *tmp = GPUList->findByCode(*codeGP);
+            GPU *tmp = GPUList->findByCode(*codeGPU);
             currGPU = tmp;
         }
         catch (string errLog){
@@ -360,7 +364,7 @@ using namespace std;
     }
     void GCard::findMRER (BaseList <MRER> *MRERList){
         try {
-            MRER *tmp = MRERList->findByCode(*codeMre);
+            MRER *tmp = MRERList->findByCode(*codeMRER);
             currMRER = tmp;
         }
         catch (string errLog){
@@ -373,7 +377,7 @@ using namespace std;
     }
     void GCard::findMMR (BaseList <MMR> *MMRList){
         try {
-            MMR *tmp = MMRList->findByCode(*codeMry);
+            MMR *tmp = MMRList->findByCode(*codeMMR);
             currMMR = tmp;
         }
         catch (string errLog){
@@ -387,16 +391,16 @@ using namespace std;
     void GCard::setImg (std::string demoImg){
         *this->image = demoImg;
     }
-    void GCard::setCodeManre (int codeMre, BaseList <MRER> *MRERList){
-        *this->codeMre = codeMre;
+    void GCard::setCodeMRER (int codeMre, BaseList <MRER> *MRERList){
+        *this->codeMRER = codeMre;
         findMRER(MRERList);
     }
     void GCard::setCodeGPU (int codeGP, BaseList <GPU> *GPUList){
-        *this->codeGP = codeGP;
+        *this->codeGPU = codeGP;
         findGPU(GPUList);
     }
-    void GCard::setCodeMemory (int codeMry, BaseList <MMR> *MMRList){
-        *this->codeMry = codeMry;
+    void GCard::setCodeMMR (int codeMry, BaseList <MMR> *MMRList){
+        *this->codeMMR = codeMry;
         findMMR(MMRList);
     }
     string GCard::getInfo (){
@@ -404,19 +408,19 @@ using namespace std;
         tmpStr += fillTab(44,'-') + "\n";
         tmpStr += "Название: " + *name + "\n";
         tmpStr += "Код Видеокарты: " + to_string(*code) + "\n";
-        tmpStr += "Код Производ.: " + to_string(*codeMre) + "\n";
+        tmpStr += "Код Производ.: " + to_string(*codeMRER) + "\n";
             tmpStr += currMRER->getInfo();
-        tmpStr += "Код Граф. процессора: " + to_string(*codeGP) + "\n";
+        tmpStr += "Код Граф. процессора: " + to_string(*codeGPU) + "\n";
             tmpStr += currGPU->getInfo();
-        tmpStr += "Код Памяти: " + to_string(*codeMry) + "\n";
+        tmpStr += "Код Памяти: " + to_string(*codeMMR) + "\n";
             tmpStr += currMMR->getInfo();
         tmpStr += fillTab(44,'-') + "\n\n";
         return tmpStr;
     }
     string *GCard::getImg (){ return image; }
-    int *GCard::getCodeManre (){ return codeMre; }
-    int *GCard::getCodeGPU (){ return codeGP; }
-    int *GCard::getCodeMemory (){ return codeMry; }
+    int *GCard::getCodeMRER (){ return codeMRER; }
+    int *GCard::getCodeGPU (){ return codeGPU; }
+    int *GCard::getCodeMMR (){ return codeMMR; }
     string GCard::writeInfoToXML(){
         string strOut;
 
@@ -427,18 +431,18 @@ using namespace std;
 
         strOut += "\t\t\t";
         strOut += "<gcInfo ";
-        strOut += "manCode=\"" + to_string(*this->codeMre) + "\" ";
-        strOut += "gpuCode=\"" + to_string(*this->codeGP) + "\" ";
-        strOut += "memCode=\"" + to_string(*this->codeMry) + "\"/>\n";
+        strOut += "mrerCode=\"" + to_string(*this->codeMRER) + "\" ";
+        strOut += "gpuCode=\"" + to_string(*this->codeGPU) + "\" ";
+        strOut += "mmrCode=\"" + to_string(*this->codeMMR) + "\"/>\n";
 
         strOut += "\t\t";
         strOut += "</gc>\n";
         return strOut;
     }
     string GCard::printSQLquery (){
-        string strOut = "INSERT INTO gcs (name, code, manCode, gpuCode, memCode) VALUES (";
-        strOut += "'" + *this->correctName + "', " + to_string(*this->code) + ", " + to_string(*this->codeMre);
-        strOut += ", " + to_string(*this->codeGP) + ", " + to_string(*this->codeMry) + ");";
+        string strOut = "INSERT INTO GC (name, code, mrerCode, gpuCode, mmrCode) VALUES (";
+        strOut += "'" + *this->correctName + "', " + to_string(*this->code) + ", " + to_string(*this->codeMRER);
+        strOut += ", " + to_string(*this->codeGPU) + ", " + to_string(*this->codeMMR) + ");";
 
         return strOut;
     }
@@ -468,7 +472,7 @@ using namespace std;
 //        }
 //    }
     GCard *GCardList::gpuBindCheck (int code){
-        for (int i = 0; i < static_cast<int>(list.size()); i++){
+        for (size_t i = 0; i < list.size(); i++){
             if (*list[i]->getCodeGPU() == code){
                 return list[i];
             }
@@ -476,16 +480,16 @@ using namespace std;
         return nullptr;
     }
     GCard *GCardList::mrerBindCheck (int code){
-        for (int i = 0; i < static_cast<int>(list.size()); i++){
-            if (*list[i]->getCodeManre() == code){
+        for (size_t i = 0; i < list.size(); i++){
+            if (*list[i]->getCodeMRER() == code){
                 return list[i];
             }
         }
         return nullptr;
     }
     GCard *GCardList::mmrBindCheck (int code){
-        for (int i = 0; i < static_cast<int>(list.size()); i++){
-            if (*list[i]->getCodeMemory() == code){
+        for (size_t i = 0; i < list.size(); i++){
+            if (*list[i]->getCodeMMR() == code){
                 return list[i];
             }
         }
@@ -539,8 +543,8 @@ using namespace std;
         }
     }
 //ADD NEW ELEMENT
-    void Catalog::addNewGC (string name = "Неизвестно", int code = -1, int codeMre = -1,
-                             int codeGP = -1, int codeMry = -1){
+    void Catalog::addNewGC (string name, int code, int codeMRER,
+                             int codeGPU, int codeMMR){
         try {
             this->listGC->findByCode(code);
             cout << " <> Ошибка! Видеокарта с кодом " << code << " есть в списке" << endl;
@@ -548,9 +552,9 @@ using namespace std;
         }
         catch (...){
             try {
-                GPU *tmpGPU = listGP->findByCode(codeGP);
-                MRER *tmpMRER = listMRER->findByCode(codeMre);
-                MMR *tmpMMR = listMMR->findByCode(codeMry);
+                GPU *tmpGPU = listGP->findByCode(codeGPU);
+                MRER *tmpMRER = listMRER->findByCode(codeMRER);
+                MMR *tmpMMR = listMMR->findByCode(codeMMR);
     //            cout << tmpGPU->getInfo() << endl;
     //            cout << tmpMRER->getInfo() << endl;
     //            cout << tmpMMR->getInfo() << endl;
@@ -566,20 +570,18 @@ using namespace std;
         }
 
     }
-    void Catalog::addNewGPU (string name = "Неизвестно", int code = -1, int nup = -1, int freq = -1,
-                             string manRer = "Неизвестно"){
+    void Catalog::addNewGPU (string name, int code, int nup, int freq, string mrer){
         try {
             this->listGP->findByCode(code);
             cout << " <> Ошибка! Граф. процессор с кодом " << code << " есть в списке" << endl;
             cout << endl;
         }
         catch (...){
-            GPU *tmpGPU = new GPU(name, code, nup, freq, manRer);
+            GPU *tmpGPU = new GPU(name, code, nup, freq, mrer);
             this->listGP->addNew(tmpGPU);
         }
     }
-    void Catalog::addNewMRER (string name = "Неизвестно", int code = -1, unsigned short year = 0,
-                            string site = "Неизвестно"){
+    void Catalog::addNewMRER (string name, int code, unsigned short year, string site){
         try {
             this->listMRER->findByCode(code);
             cout << " <> Ошибка! Производитель с кодом " << code << " есть в списке" << endl;
@@ -590,15 +592,15 @@ using namespace std;
             this->listMRER->addNew(tmpMRER);
         }
     }
-    void Catalog::addNewMMR (int code = -1, unsigned short memory = 0, string type = "Неизвестно",
-                             double bandwidth = 0.0){
+    void Catalog::addNewMMR (int code, unsigned short memory, string type,
+                             double bandwidth, int freq){
         try {
             this->listMMR->findByCode(code);
             cout << " <> Ошибка! Память с кодом " << code << " есть в списке" << endl;
             cout << endl;
         }
         catch (...){
-            MMR *tmpMMR = new MMR(code, memory, type, bandwidth);
+            MMR *tmpMMR = new MMR(code, memory, type, bandwidth, freq);
             this->listMMR->addNew(tmpMMR);
         }
     }
@@ -710,7 +712,7 @@ using namespace std;
     }
     void Catalog::setGCcodeMRER (int i, int mrerCode){
         try {
-            this->listGC->findByCode(i)->setCodeManre(mrerCode, this->listMRER);
+            this->listGC->findByCode(i)->setCodeMRER(mrerCode, this->listMRER);
         }
         catch (string errLog){
             cout << errLog << endl;
@@ -720,7 +722,7 @@ using namespace std;
     }
     void Catalog::setGCcodeMMR (int i, int mmrCode){
         try {
-            this->listGC->findByCode(i)->setCodeMemory(mmrCode, this->listMMR);
+            this->listGC->findByCode(i)->setCodeMMR(mmrCode, this->listMMR);
         }
         catch (string errLog){
             cout << errLog << endl;

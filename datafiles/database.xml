@@ -3,46 +3,46 @@
 <database>
 	<gpuList>
 		<gpu name="Radeon RX 560" code='1'>
-			<gpuInfo nup="896" freq="1175" manf="AMD"/>
+			<gpuInfo nup="896" freq="1175" mrer="AMD"/>
 		</gpu>
 		<gpu name="GeForce GT 710" code='2'>
-			<gpuInfo nup="192" freq="954" manf="NVIDIA"/>
+			<gpuInfo nup="192" freq="954" mrer="NVIDIA"/>
 		</gpu>
 		<gpu name="Intel Dual GPU 1321" code='3'>
-			<gpuInfo nup="673" freq="1102" manf="INTEL"/>
+			<gpuInfo nup="673" freq="1102" mrer="INTEL"/>
 		</gpu>
 	</gpuList>
-	<memList>
-		<mem code="1">
-			<memInfo memory="4" type="GDDR3" bandwidth="12.800000"/>
-		</mem>
-		<mem code="2">
-			<memInfo memory="3" type="GDDR5" bandwidth="40.000000"/>
-		</mem>
-		<mem code="3">
-			<memInfo memory="9" type="DDR2" bandwidth="10.200000"/>
-		</mem>
-	</memList>
-	<manfList>
-		<manf name="Palit" code="1">
-			<manfInfo year="1998" site="palit.com"/>
-		</manf>
-		<manf name="MSI" code="2">
-			<manfInfo year="1987" site="msi.com"/>
-		</manf>
-		<manf name="NSpeed" code="3">
-			<manfInfo year="2013" site="nspd.com"/>
-		</manf>
-	</manfList>
+	<mrerList>
+		<mrer name="Palit" code="1">
+			<mrerInfo fYear="1998" site="palit.com"/>
+		</mrer>
+		<mrer name="MSI" code="2">
+			<mrerInfo fYear="1987" site="msi.com"/>
+		</mrer>
+		<mrer name="NSpeed" code="3">
+			<mrerInfo fYear="2013" site="nspd.com"/>
+		</mrer>
+	</mrerList>
+	<mmrList>
+		<mmr code="1">
+			<mmrInfo memory="4" type="GDDR3" bandwidth="12.800000" freq="800"/>
+		</mmr>
+		<mmr code="2">
+			<mmrInfo memory="3" type="GDDR4" bandwidth="40.000000" freq="1666"/>
+		</mmr>
+		<mmr code="3">
+			<mmrInfo memory="9" type="DDR2" bandwidth="10.200000" freq="800"/>
+		</mmr>
+	</mmrList>	
 	<gcList>
 		<gc name="PASSIVE" code="1">
-			<gcInfo manCode="1" gpuCode="1" memCode="1"/>
+			<gcInfo mrerCode="1" gpuCode="1" mmrCode="1"/>
 		</gc>
 		<gc name="Silent LP" code="2">
-			<gcInfo manCode="2" gpuCode="2" memCode="2"/>
+			<gcInfo mrerCode="2" gpuCode="2" mmrCode="2"/>
 		</gc>
 		<gc name="Power UP" code="3">
-			<gcInfo manCode="1" gpuCode="1" memCode="1"/>
+			<gcInfo mrerCode="1" gpuCode="1" mmrCode="1"/>
 		</gc>
 	</gcList>
 </database>

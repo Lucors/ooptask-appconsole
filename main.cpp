@@ -11,7 +11,7 @@ using namespace std;
  * (методы, которые обращаются к методам вложенных в Catalog списков),
  * однако есть нереализованные прослойки и для доступа к методам вложенных классов
  * необходимо использовать метод getList"listname" для получения указателя на нужный экземпляр класса
- * -> Общие обозначения: GC - Graphic Cards, GPU - gpu (gp), MRER - Manufacturer (MR, Manre, manf), MMR - Memory (mem)
+ * -> Общие обозначения: GC - Graphic Cards, GPU - gpu, MRER - Manufacturer, MMR - Memory
  * -> Интерфейсы и реализация классов хранятся в файлах bones.h и bones.cpp соответственно
  * -> Файл func.h отвечает за большинство функций в проекте, таких как запись/чтение
  * -> Для работы с xml используется парсер TinyXML, а для работы с бд используется библиотека sqlite3
@@ -128,9 +128,9 @@ int main () {
                 lib.addNewMRER("MSI", 2, 1987, "msi.com");
                 lib.addNewMRER("NSpeed", 3, 2013, "nspd.com");
                 //Код ПАМЯТИ, объем, тип, пропуск. способность
-                lib.addNewMMR(1, 4, "GDDR3", 12.8);
-                lib.addNewMMR(2, 3, "GDDR5", 40);
-                lib.addNewMMR(3, 9, "DDR2", 10.2);
+                lib.addNewMMR(1, 4, "GDDR3", 12.8, 0);
+                lib.addNewMMR(2, 3, "GDDR5", 40, 0);
+                lib.addNewMMR(3, 9, "DDR2", 10.2, 0);
                 //Название, код ВК, код Произ., код ГП, код Памяти
                 lib.addNewGC("PASSIVE", 1, 1, 1, 1);
                 lib.addNewGC("Silent LP", 2, 2, 2, 2);

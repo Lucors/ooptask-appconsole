@@ -26,12 +26,12 @@ string fillTab (int count, char sim){
     return str;
 }
 void wordToLow (string &word){
-    for (int i = 0; static_cast<size_t>(i) < word.size(); i++){
-        word[i] = tolower(word[i]);
+    for (size_t i = 0; i < word.size(); i++){
+        word[i] = static_cast<char>(tolower(word[i]));
     }
 }
 bool isWordDigit (string word){
-    for (int i = 0; static_cast<size_t>(i) < word.size(); i++){
+    for (size_t i = 0; i < word.size(); i++){
         if (!isdigit(word[i])){
             return false;
         }
@@ -39,8 +39,8 @@ bool isWordDigit (string word){
     return true;
 }
 string fileNameCheck (string fileName, string extension){
-    int tmpSize = extension.size() + 1;
-    if (fileName.size() > static_cast<size_t>(tmpSize)){
+    size_t tmpSize = extension.size() + 1;
+    if (fileName.size() > tmpSize){
         string tmpStr = fileName.substr(fileName.size()-tmpSize, tmpSize);
         if (tmpStr != ("." + extension)){
             fileName += ("." + extension);
@@ -55,7 +55,7 @@ string fileNameCheck (string fileName, string extension){
 }
 
 bool isEmpty (const char * word) {
-    string tmp = (const char*) word;
+    string tmp = static_cast<const char*>(word);
     return (tmp.size() == 0 ? true : false);
 }
 
@@ -80,7 +80,7 @@ bool readFromXML (string fileName, Catalog lib){
                      gpu;
                      gpu = gpu->NextSiblingElement("gpu")){
                     int intCode = -1, intNup = -1, intFreq = -1;
-                    const char *manf = "Неизвестно";
+                    const char *mrer = "Неизвестно";
                     const char *name = gpu->Attribute("name");
                     if (isEmpty(name)){
                         name = "Неизвестно";
@@ -100,24 +100,25 @@ bool readFromXML (string fileName, Catalog lib){
                         if (!isEmpty(freq)){
                             intFreq = atoi(freq);
                         }
-                        if (!isEmpty(gpuInfo->Attribute("manf"))){
-                            manf = gpuInfo->Attribute("manf");
+                        if (!isEmpty(gpuInfo->Attribute("mrer"))){
+                            mrer = gpuInfo->Attribute("mrer");
                         }
                     }
 
-                    lib.addNewGPU((const char*) name, intCode, intNup, intFreq, (const char*) manf);
+                    lib.addNewGPU(static_cast<const char*>(name), intCode, intNup, intFreq, static_cast<const char*>(mrer));
                 }
             }
 
             //MANUFACTURE
-            for (TiXmlElement *manlist = database->FirstChildElement("manfList");
+            for (TiXmlElement *manlist = database->FirstChildElement("mrerList");
                  manlist;
-                 manlist = manlist->NextSiblingElement("manfList")){
-                for (TiXmlElement *manf = manlist->FirstChildElement("manf");
+                 manlist = manlist->NextSiblingElement("mrerList")){
+                for (TiXmlElement *manf = manlist->FirstChildElement("mrer");
                      manf;
-                     manf = manf->NextSiblingElement("manf")){
+                     manf = manf->NextSiblingElement("mrer")){
                     const char *site = "Неизвестно", *year;
-                    int intYear = -1, intCode = -1;
+                    unsigned short shortYear = 0;
+                    int intCode = -1;
                     const char *name = manf->Attribute("name");
                     if (isEmpty(name)){
                         name = "Неизвестно";
@@ -127,41 +128,42 @@ bool readFromXML (string fileName, Catalog lib){
                         intCode = atoi(code);
                     }
 
-                    TiXmlElement *manfInfo = manf->FirstChildElement("manfInfo");
+                    TiXmlElement *manfInfo = manf->FirstChildElement("mrerInfo");
                     if (manfInfo){
-                        year = manfInfo->Attribute("year");
+                        year = manfInfo->Attribute("fYear");
                         if (!isEmpty(year)){
-                            intYear = atoi(year);
+                            shortYear = static_cast<unsigned short>(atoi(year));
                         }
                         if (!isEmpty(manfInfo->Attribute("site"))){
                             site = manfInfo->Attribute("site");
                         }
                     }
 
-                    lib.addNewMRER((const char*) name, intCode, intYear, (const char*) site);
+                    lib.addNewMRER(static_cast<const char*>(name), intCode, shortYear, static_cast<const char*>(site));
                 }
             }
 
             //MEMORY
-            for (TiXmlElement *memlist = database->FirstChildElement("memList");
+            for (TiXmlElement *memlist = database->FirstChildElement("mmrList");
                  memlist;
-                 memlist = memlist->NextSiblingElement("memList")){
-                for (TiXmlElement *mem = memlist->FirstChildElement("mem");
+                 memlist = memlist->NextSiblingElement("mmrList")){
+                for (TiXmlElement *mem = memlist->FirstChildElement("mmr");
                      mem;
-                     mem = mem->NextSiblingElement("mem")){
+                     mem = mem->NextSiblingElement("mmr")){
                     const char *type = "Неизвестно";
                     double dbBand = 0.0;
                     const char *code = mem->Attribute("code");
-                    int intCode = -1, intMem = -1;
+                    int intCode = -1, intFreq = 0;
+                    unsigned short shortMem = 0;
                     if (!isEmpty(code)){
                         intCode = atoi(code);
                     }
 
-                    TiXmlElement *memInfo = mem->FirstChildElement("memInfo");
+                    TiXmlElement *memInfo = mem->FirstChildElement("mmrInfo");
                     if (memInfo){
                         const char *memory = memInfo->Attribute("memory");
                         if (!isEmpty(memory)){
-                            intMem = atoi(memory);
+                            shortMem = static_cast<unsigned short>(atoi(memory));
                         }
                         if (!isEmpty(memInfo->Attribute("type"))){
                             type = memInfo->Attribute("type");
@@ -170,9 +172,13 @@ bool readFromXML (string fileName, Catalog lib){
                         if (!isEmpty(bandwidth)){
                             dbBand = atof(bandwidth);
                         }
+                        const char *freq = memInfo->Attribute("freq");
+                        if (!isEmpty(freq)){
+                            intFreq = atoi(freq);
+                        }
                     }
 
-                    lib.addNewMMR(intCode, intMem, (const char*) type, dbBand);
+                    lib.addNewMMR(intCode, shortMem, static_cast<const char*>(type), dbBand, intFreq);
                 }
             }
 
@@ -195,7 +201,7 @@ bool readFromXML (string fileName, Catalog lib){
 
                     TiXmlElement *gcInfo = gc->FirstChildElement("gcInfo");
                     if (gcInfo){
-                        const char *manCode = gcInfo->Attribute("manCode");
+                        const char *manCode = gcInfo->Attribute("mrerCode");
                         if (!isEmpty(manCode)){
                             intManCode = atoi(manCode);
                         }
@@ -203,12 +209,12 @@ bool readFromXML (string fileName, Catalog lib){
                         if (!isEmpty(gpuCode)){
                             intGPUCode = atoi(gpuCode);
                         }
-                        const char *memCode = gcInfo->Attribute("memCode");
+                        const char *memCode = gcInfo->Attribute("mmrCode");
                         if (!isEmpty(memCode)){
                             intMemCode = atoi(memCode);
                         }
                     }
-                    lib.addNewGC((const char*) name, intCode, intManCode, intGPUCode, intMemCode);
+                    lib.addNewGC(static_cast<const char*>(name), intCode, intManCode, intGPUCode, intMemCode);
                 }
             }
         }
@@ -263,15 +269,15 @@ static Catalog *tmp;
 
 //CALLBACK for sqlite3_exec
 //GPU HANDLER
-// <> warning: unused parameter in static function
+//Предупреждение о неизбежной устарелой переменной
 int callbackGPU(void *obsolete, int tableCol, char **colArg, char **colName) {
     if (tableCol > 0){
         string name = colArg[0];
         int code = atoi(colArg[1]);
         int nup = atoi(colArg[2]);
         int freq = atoi(colArg[3]);
-        string manf = colArg[4];
-        tmp->addNewGPU(name, code, nup, freq, manf);
+        string mrer = colArg[4];
+        tmp->addNewGPU(name, code, nup, freq, mrer);
     }
     else {
         cout << "<> Ошибка! Запрос вернул пустую строку" << endl;
@@ -279,7 +285,7 @@ int callbackGPU(void *obsolete, int tableCol, char **colArg, char **colName) {
     return 0;
 }
 //MRER HANDLER
-// <> warning: unused parameter in static function
+//Предупреждение о неизбежной устарелой переменной
 int callbackMRER(void *obsolete, int tableCol, char **colArg, char **colName) {
     if (tableCol > 0){
         string name = colArg[0];
@@ -294,14 +300,15 @@ int callbackMRER(void *obsolete, int tableCol, char **colArg, char **colName) {
     return 0;
 }
 //MMR HANDLER
-// <> warning: unused parameter in static function
+//Предупреждение о неизбежной устарелой переменной
 int callbackMMR(void *obsolete, int tableCol, char **colArg, char **colName) {
     if (tableCol > 0){
         int code = atoi(colArg[0]);
-        int memory = atoi(colArg[1]);
+        unsigned short memory = static_cast<unsigned short>(atoi(colArg[1]));
         string type = colArg[2];
         double band = atof(colArg[3]);
-        tmp->addNewMMR(code, memory, type, band);
+        int freq = atoi(colArg[4]);
+        tmp->addNewMMR(code, memory, type, band, freq);
     }
     else {
         cout << "<> Ошибка! Запрос вернул пустую строку" << endl;
@@ -314,10 +321,10 @@ int callbackGC(void *obsolete, int tableCol, char **colArg, char **colName) {
     if (tableCol > 0){
         string name = colArg[0];
         int code = atoi(colArg[1]);
-        int manCode = atoi(colArg[2]);
+        int mrerCode = atoi(colArg[2]);
         int gpuCode = atoi(colArg[3]);
-        int memCode = atoi(colArg[4]);
-        tmp->addNewGC(name, code, manCode, gpuCode, memCode);
+        int mmrCode = atoi(colArg[4]);
+        tmp->addNewGC(name, code, mrerCode, gpuCode, mmrCode);
     }
     else {
         cout << "<> Ошибка! Запрос вернул пустую строку" << endl;
@@ -341,8 +348,8 @@ bool readFromSQL (string fileName, Catalog lib){
     }
 
     sqlite3 *database;
-    char *errMsg = 0;
-    char *sql;
+    char *errMsg = nullptr;
+    const char *sql;
     int tmpExec;
     tmp = &lib;
 
@@ -354,30 +361,26 @@ bool readFromSQL (string fileName, Catalog lib){
     else {
         cout << "База данных открыта успешно" << endl;
         try {
-            // <> warning: ISO C++ converting string --> char *
-            sql = "SELECT * FROM gpus;";
-            tmpExec = sqlite3_exec(database, sql, callbackGPU, 0, &errMsg);
+            sql = "SELECT * FROM GPU;";
+            tmpExec = sqlite3_exec(database, sql, callbackGPU, nullptr, &errMsg);
             if (tmpExec != SQLITE_OK){
                 throw errMsg;
             }
             cout << "\t" << lib.getListGPU()->getObjName() << " OK" << endl;
-            // <> warning: ISO C++ converting string --> char *
-            sql = "SELECT * FROM mrers;";
-            tmpExec = sqlite3_exec(database, sql, callbackMRER, 0, &errMsg);
+            sql = "SELECT * FROM MRER;";
+            tmpExec = sqlite3_exec(database, sql, callbackMRER, nullptr, &errMsg);
             if (tmpExec != SQLITE_OK){
                 throw errMsg;
             }
             cout << "\t" << lib.getListMRER()->getObjName() << " OK" << endl;
-            // <> warning: ISO C++ converting string --> char *
-            sql = "SELECT * FROM mmrs;";
-            tmpExec = sqlite3_exec(database, sql, callbackMMR, 0, &errMsg);
+            sql = "SELECT * FROM MMR;";
+            tmpExec = sqlite3_exec(database, sql, callbackMMR, nullptr, &errMsg);
             if (tmpExec != SQLITE_OK){
                 throw errMsg;
             }
             cout << "\t" << lib.getListMMR()->getObjName() << " OK" << endl;
-            // <> warning: ISO C++ converting string --> char *
-            sql = "SELECT * FROM gcs;";
-            tmpExec = sqlite3_exec(database, sql, callbackGC, 0, &errMsg);
+            sql = "SELECT * FROM GC;";
+            tmpExec = sqlite3_exec(database, sql, callbackGC, nullptr, &errMsg);
             if (tmpExec != SQLITE_OK){
                 throw errMsg;
             }
@@ -394,7 +397,7 @@ bool readFromSQL (string fileName, Catalog lib){
     return true;
 }
 
-//Template for SQL query
+//Шаблон sql запроса
 template < typename T >
 void execLibSQLquery (T inputLib, sqlite3 *database){
     string sql;
@@ -404,7 +407,7 @@ void execLibSQLquery (T inputLib, sqlite3 *database){
     for (int i = 0; i < inputLib->getSize(); i++){
         sql = inputLib->createSQLquery(i);
         try {
-            tmpExec = sqlite3_exec(database, sql.c_str(), 0, 0, &errMsg);
+            tmpExec = sqlite3_exec(database, sql.c_str(), nullptr, nullptr, &errMsg);
             if (tmpExec != SQLITE_OK){
                 throw errMsg;
             }
@@ -418,12 +421,12 @@ void execLibSQLquery (T inputLib, sqlite3 *database){
     cout << "\t" << inputLib->getObjName() << " OK" << endl;
 }
 
-//Writing to SQLite db
+//Запись в бд SQLite
 bool writeToSQL (string fileName, Catalog lib){
     fileName = fileNameCheck(fileName, "db");
     cout << "Файл: " << fileName << endl;
     sqlite3 *database;
-    char *errMsg = 0;
+    char *errMsg = nullptr;
     int tmpExec;
 
     tmpExec = sqlite3_open(fileName.c_str(), &database);
@@ -434,43 +437,41 @@ bool writeToSQL (string fileName, Catalog lib){
     else {
         cout << "База данных открыта успешно" << endl;
         const char *sql = "\
-        DROP TABLE IF EXISTS gpus;    \
-        DROP TABLE IF EXISTS mrers;    \
-        DROP TABLE IF EXISTS mmrs;    \
-        DROP TABLE IF EXISTS gcs;    \
-        CREATE TABLE gpus (  \
-            name text,  \
-            code int,   \
-            nup int,    \
-            freq int,   \
-            manf text,  \
-            PRIMARY KEY (code)  \
-        );  \
-        CREATE TABLE mrers (  \
-            name text,  \
-            code int,   \
-            year int,   \
-            site text,  \
-            PRIMARY KEY (code)  \
-        );  \
-        CREATE TABLE mmrs (   \
-            code int,   \
-            memory int, \
-            type text,  \
-            band float, \
-            PRIMARY KEY (code)  \
-        );  \
-        CREATE TABLE gcs (    \
-            name text,  \
-            code int,   \
-            manCode int,    \
-            gpuCode int,    \
-            memCode int,    \
-            PRIMARY KEY (code)  \
+        DROP TABLE IF EXISTS GPU;    \
+        DROP TABLE IF EXISTS MRER;    \
+        DROP TABLE IF EXISTS MMR;    \
+        DROP TABLE IF EXISTS GC;    \
+        PRAGMA foreign_keys = ON;\
+        CREATE TABLE IF NOT EXISTS GPU (\
+            code INTEGER PRIMARY KEY,\
+            name TEXT UNIQUE,\
+            nup INTEGER,\
+            freq INTEGER,\
+            mrer TEXT\
+        );\
+        CREATE TABLE IF NOT EXISTS MRER (\
+            code INTEGER PRIMARY KEY,\
+            name TEXT UNIQUE,\
+            fYear SMALLINT UNSIGNED,\
+            site TEXT\
+        );\
+        CREATE TABLE IF NOT EXISTS MMR (\
+            code INTEGER PRIMARY KEY,\
+            memory SMALLINT UNSIGNED,\
+            bandwidth DOUBLE,\
+            freq INTEGER,\
+            type TEXT\
+        );\
+        CREATE TABLE IF NOT EXISTS GC (\
+            code INTEGER PRIMARY KEY,\
+            name TEXT,\
+            mrerCode INTEGER REFERENCES MRER(code),\
+            gpuCode INTEGER REFERENCES GPU(code),\
+            mmrCode INTEGER REFERENCES MMR(code)\
         );";
 
         try {
-            tmpExec = sqlite3_exec(database, sql, 0, 0, &errMsg);
+            tmpExec = sqlite3_exec(database, sql, nullptr, nullptr, &errMsg);
             if (tmpExec != SQLITE_OK){
                 throw errMsg;
             }

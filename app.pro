@@ -12,4 +12,4 @@ SOURCES += \
 
 HEADERS += \
     bones.h \
-    funcs.h
+    funcs.hpp
