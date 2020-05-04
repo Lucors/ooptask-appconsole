@@ -1,14 +1,7 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <iomanip>
 #include "bones.h"
 #include "funcs.hpp"
-#include <fstream>
+
 using namespace std;
-
-
-//Class implementation
 
 /////////////////////
 //BASE CLASS
@@ -312,7 +305,7 @@ using namespace std;
 /////////////////////
 //GCARD CLASS
 /////////////////////
-//obsolete *_*
+//Устарело~
 //    GCard::GCard (string name, int code, int codeMre,
 //                  int codeGP, int codeMry, BaseList <GPU> *GPUList,
 //                  BaseList <MRER> *MRERList, BaseList <MMR> *MMRList){
@@ -349,59 +342,80 @@ using namespace std;
         delete this->correctName;
         delete this->image;
     }
-    void GCard::findGPU (BaseList <GPU> *GPUList){
-        try {
-            GPU *tmp = GPUList->findByCode(*codeGPU);
-            currGPU = tmp;
-        }
-        catch (string errLog){
-            cout << endl;
-            cout << "<> Ошибка! ";
-            cout << errLog << endl;
-            cout << " <> Привязка не произведена" << endl;
-            cout << endl;
-        }
-    }
-    void GCard::findMRER (BaseList <MRER> *MRERList){
-        try {
-            MRER *tmp = MRERList->findByCode(*codeMRER);
-            currMRER = tmp;
-        }
-        catch (string errLog){
-            cout << endl;
-            cout << "<> Ошибка! ";
-            cout << errLog << endl;
-            cout << " <> Привязка не произведена" << endl;
-            cout << endl;
-        }
-    }
-    void GCard::findMMR (BaseList <MMR> *MMRList){
-        try {
-            MMR *tmp = MMRList->findByCode(*codeMMR);
-            currMMR = tmp;
-        }
-        catch (string errLog){
-            cout << endl;
-            cout << "<> Ошибка! ";
-            cout << errLog << endl;
-            cout << " <> Привязка не произведена" << endl;
-            cout << endl;
-        }
-    }
+//    void GCard::findGPU (BaseList <GPU> *GPUList){
+//        try {
+//            GPU *tmp = GPUList->findByCode(*codeGPU);
+//            currGPU = tmp;
+//        }
+//        catch (string errLog){
+//            cout << endl;
+//            cout << "<> Ошибка! ";
+//            cout << errLog << endl;
+//            cout << " <> Привязка не произведена" << endl;
+//            cout << endl;
+//        }
+//    }
+//    void GCard::findMRER (BaseList <MRER> *MRERList){
+//        try {
+//            MRER *tmp = MRERList->findByCode(*codeMRER);
+//            currMRER = tmp;
+//        }
+//        catch (string errLog){
+//            cout << endl;
+//            cout << "<> Ошибка! ";
+//            cout << errLog << endl;
+//            cout << " <> Привязка не произведена" << endl;
+//            cout << endl;
+//        }
+//    }
+//    void GCard::findMMR (BaseList <MMR> *MMRList){
+//        try {
+//            MMR *tmp = MMRList->findByCode(*codeMMR);
+//            currMMR = tmp;
+//        }
+//        catch (string errLog){
+//            cout << endl;
+//            cout << "<> Ошибка! ";
+//            cout << errLog << endl;
+//            cout << " <> Привязка не произведена" << endl;
+//            cout << endl;
+//        }
+//    }
     void GCard::setImg (std::string demoImg){
         *this->image = demoImg;
     }
-    void GCard::setCodeMRER (int codeMre, BaseList <MRER> *MRERList){
-        *this->codeMRER = codeMre;
-        findMRER(MRERList);
+    void GCard::setPtrMRER(MRER *mrer){
+        if (mrer != nullptr){
+            this->codeMRER = mrer->getCode();
+            this->currMRER = mrer;
+        }
+        else {
+            cout << "<> Ошибка! ";
+            cout << "nullptr в качестве MRER для GC с кодом " << this->code << endl;
+            cout << " <> Привязка не произведена" << endl;
+        }
     }
-    void GCard::setCodeGPU (int codeGP, BaseList <GPU> *GPUList){
-        *this->codeGPU = codeGP;
-        findGPU(GPUList);
+    void GCard::setPtrGPU (GPU *gpu){
+        if (gpu != nullptr){
+            this->codeGPU = gpu->getCode();
+            this->currGPU = gpu;
+        }
+        else {
+            cout << "<> Ошибка! ";
+            cout << "nullptr в качестве GPU для GC с кодом " << this->code << endl;
+            cout << " <> Привязка не произведена" << endl;
+        }
     }
-    void GCard::setCodeMMR (int codeMry, BaseList <MMR> *MMRList){
-        *this->codeMMR = codeMry;
-        findMMR(MMRList);
+    void GCard::setPtrMMR (MMR *mmr){
+        if (mmr != nullptr){
+            this->codeMMR = mmr->getCode();
+            this->currMMR = mmr;
+        }
+        else {
+            cout << "<> Ошибка! ";
+            cout << "nullptr в качестве MMR для GC с кодом " << this->code << endl;
+            cout << " <> Привязка не произведена" << endl;
+        }
     }
     string GCard::getInfo (){
         string tmpStr;
@@ -455,7 +469,7 @@ using namespace std;
     }
     GCardList::~GCardList(){
     }
-//obsolete *_*
+//Устарело~
 //    void GCardList::refresh (BaseList <GPU> *GPUList, BaseList <MRER> *MRERList, BaseList <MMR> *MMRList){
 //        for (int i = 0; i < static_cast<int>(list.size()); i++){
 //            try {
@@ -503,7 +517,7 @@ using namespace std;
 ////////////////////
     Catalog::Catalog (){
         listGC->setObjName("Видеокарта");
-        listGP->setObjName("Граф. процессор");
+        listGPU->setObjName("Граф. процессор");
         listMRER->setObjName("Производитель");
         listMMR->setObjName("Память");
     }
@@ -511,7 +525,7 @@ using namespace std;
     }
 //CHECK
     bool Catalog::checkListGPU (){
-        if (listGP == nullptr){
+        if (listGPU == nullptr){
             return false;
         }
         else { return true;}
@@ -552,12 +566,9 @@ using namespace std;
         }
         catch (...){
             try {
-                GPU *tmpGPU = listGP->findByCode(codeGPU);
+                GPU *tmpGPU = listGPU->findByCode(codeGPU);
                 MRER *tmpMRER = listMRER->findByCode(codeMRER);
                 MMR *tmpMMR = listMMR->findByCode(codeMMR);
-    //            cout << tmpGPU->getInfo() << endl;
-    //            cout << tmpMRER->getInfo() << endl;
-    //            cout << tmpMMR->getInfo() << endl;
                 GCard *tmpCard = new GCard(name, code, tmpGPU, tmpMRER, tmpMMR);
                 this->listGC->addNew(tmpCard);
             }
@@ -572,13 +583,13 @@ using namespace std;
     }
     void Catalog::addNewGPU (string name, int code, int nup, int freq, string mrer){
         try {
-            this->listGP->findByCode(code);
+            this->listGPU->findByCode(code);
             cout << " <> Ошибка! Граф. процессор с кодом " << code << " есть в списке" << endl;
             cout << endl;
         }
         catch (...){
             GPU *tmpGPU = new GPU(name, code, nup, freq, mrer);
-            this->listGP->addNew(tmpGPU);
+            this->listGPU->addNew(tmpGPU);
         }
     }
     void Catalog::addNewMRER (string name, int code, unsigned short year, string site){
@@ -606,7 +617,7 @@ using namespace std;
     }
 //SET LIST
     void Catalog::setListGPU (BaseList<GPU> *tmpList){
-        this->listGP = tmpList;
+        this->listGPU = tmpList;
     }
     void Catalog::setListMRER (BaseList<MRER> *tmpList){
         this->listMRER = tmpList;
@@ -638,16 +649,16 @@ using namespace std;
             }
         }
     }
-    void Catalog::setGPcode(int oldCode, int newCode){
+    void Catalog::setGPUcode(int oldCode, int newCode){
         try {
-            this->listGP->findByCode(newCode);
+            this->listGPU->findByCode(newCode);
             cout << " <> Ошибка! Граф. процессор с кодом " << newCode << " уже есть в списке" << endl;
             cout << " <> Смена кода не произведена" << endl;
             cout << endl;
         }
         catch (...){
             try {
-                this->listGP->findByCode(oldCode)->setCode(newCode);
+                this->listGPU->findByCode(oldCode)->setCode(newCode);
                 cout << " <> Успешно сменен код " << oldCode << " у граф. процессора на код " << newCode << endl;
             }
             catch (string errLog){
@@ -700,9 +711,9 @@ using namespace std;
         }
     }
 //SET CODE FOR GC
-    void Catalog::setGCcodeGPU (int i, int gpCode){
+    void Catalog::setGCcodeGPU (int i, int gpuCode){
         try {
-            this->listGC->findByCode(i)->setCodeGPU(gpCode, this->listGP);
+            this->listGC->findByCode(i)->setPtrGPU(this->listGPU->findByCode(gpuCode));
         }
         catch (string errLog){
             cout << errLog << endl;
@@ -712,7 +723,7 @@ using namespace std;
     }
     void Catalog::setGCcodeMRER (int i, int mrerCode){
         try {
-            this->listGC->findByCode(i)->setCodeMRER(mrerCode, this->listMRER);
+            this->listGC->findByCode(i)->setPtrMRER(this->listMRER->findByCode(mrerCode));
         }
         catch (string errLog){
             cout << errLog << endl;
@@ -722,7 +733,7 @@ using namespace std;
     }
     void Catalog::setGCcodeMMR (int i, int mmrCode){
         try {
-            this->listGC->findByCode(i)->setCodeMMR(mmrCode, this->listMMR);
+            this->listGC->findByCode(i)->setPtrMMR(this->listMMR->findByCode(mmrCode));
         }
         catch (string errLog){
             cout << errLog << endl;
@@ -732,7 +743,7 @@ using namespace std;
     }
 //CLEAR
     void Catalog::listGPclear (){
-        this->listGP->clearAll();
+        this->listGPU->clearAll();
     }
     void Catalog::listGCclear (){
         this->listGC->clearAll();
@@ -770,7 +781,7 @@ using namespace std;
                 throw "Граф. процессор с кодом " + to_string(code) +
                         " привязан к видеокарте с кодом " + std::to_string(*tmpGC->getCode());
             }
-            listGP->deleteElement(code);
+            listGPU->deleteElement(code);
             cout << " <> Успешно удален граф. процессор с кодом " << code << endl;
             cout << endl;
         }
@@ -822,7 +833,7 @@ using namespace std;
         return this->listGC->getSize();
     }
     int Catalog::getListGPsize (){
-        return this->listGP->getSize();
+        return this->listGPU->getSize();
     }
     int Catalog::getListMRERsize (){
         return this->listMRER->getSize();
@@ -832,7 +843,7 @@ using namespace std;
     }
 //GET LIST
     BaseList <GPU>* Catalog::getListGPU (){
-        return listGP;
+        return listGPU;
     }
     BaseList <MRER>* Catalog::getListMRER (){
         return listMRER;
@@ -845,7 +856,7 @@ using namespace std;
     }
 //GET INFO
     string Catalog::getGPUInfo (int code){
-        return this->listGP->findByCode(code)->getInfo();
+        return this->listGPU->findByCode(code)->getInfo();
     }
     string Catalog::getGCInfo (int code){
         return this->listGC->findByCode(code)->getInfo();
@@ -861,7 +872,7 @@ using namespace std;
         return this->listGC->printAll();
     }
     string Catalog::printListGP (){
-        return this->listGP->printAll();
+        return this->listGPU->printAll();
     }
     string Catalog::printListMRER (){
         return this->listMRER->printAll();

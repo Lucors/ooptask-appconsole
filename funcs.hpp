@@ -1,22 +1,22 @@
 #ifndef FUNCS_H
 #define FUNCS_H
-#define FPATH "" //Путь к папке с файлами. По-умолчанию, файлы в папке с исполняемым файлом.
 
-#include <iostream>
-#include <string>
-#include <bones.h>
-#include <fstream>
-//Tinyxml lib
+//Библиотека Tinyxml
 #include "tinyxml/tinystr.h"
 #include "tinyxml/tinystr.cpp"
 #include "tinyxml/tinyxml.h"
 #include "tinyxml/tinyxml.cpp"
 #include "tinyxml/tinyxmlerror.cpp"
 #include "tinyxml/tinyxmlparser.cpp"
-//SQLite lib
+//Библиотека SQLite из пакета sqlite3
 #include <sqlite3.h>
+//Локальные файлы
+#include "bones.h"
 
 using namespace std;
+
+//Путь к папке с файлами. По-умолчанию, файлы в папке с исполняемым файлом.
+const string FPATH = "";
 
 string fillTab (int count, char sim){
     string str;
@@ -59,7 +59,7 @@ bool isEmpty (const char * word) {
     return (tmp.size() == 0 ? true : false);
 }
 
-//Reading from XML file
+//Чтение из XML файла
 bool readFromXML (string fileName, Catalog lib){
     fileName = fileNameCheck(fileName, "xml");
     cout << "Файл: " << fileName << endl;
@@ -222,13 +222,13 @@ bool readFromXML (string fileName, Catalog lib){
             cout << "Неккоретный файл" << endl;
             return false;
         }
-//obsolete *_*
+//Устарело~
 //        listGC->refresh(*&listGPU, *&listMR, *&listMMR);
         return true;
     }
 }
 
-//Writing to XML file
+//Запись в XML файл
 void writeToXML (string fileName, Catalog lib){
     fileName = fileNameCheck(fileName, "xml");
     ofstream fileOUT;
@@ -245,14 +245,14 @@ void writeToXML (string fileName, Catalog lib){
         fileOUT << "\t</gpuList>" << endl;
     }
     if(lib.getListMMR()->getSize() != 0){
-        fileOUT << "\t<memList>" << endl;
+        fileOUT << "\t<mmrList>" << endl;
         fileOUT << lib.getListMMR()->printXML();
-        fileOUT << "\t</memList>" << endl;
+        fileOUT << "\t</mmrList>" << endl;
     }
     if(lib.getListMRER()->getSize() != 0){
-        fileOUT << "\t<manfList>" << endl;
+        fileOUT << "\t<mrerList>" << endl;
         fileOUT << lib.getListMRER()->printXML();
-        fileOUT << "\t</manfList>" << endl;
+        fileOUT << "\t</mrerList>" << endl;
     }
     if(lib.getListGC()->getSize() != 0){
         fileOUT << "\t<gcList>" << endl;
@@ -264,10 +264,10 @@ void writeToXML (string fileName, Catalog lib){
     fileOUT.close();
 }
 
-//GLOBAL Catalog var
-static Catalog *tmp;
+//Глобальная переменная текущего каталога
+static Catalog *catalog;
 
-//CALLBACK for sqlite3_exec
+//CALLBACK для sqlite3_exec
 //GPU HANDLER
 //Предупреждение о неизбежной устарелой переменной
 int callbackGPU(void *obsolete, int tableCol, char **colArg, char **colName) {
@@ -277,7 +277,7 @@ int callbackGPU(void *obsolete, int tableCol, char **colArg, char **colName) {
         int nup = atoi(colArg[2]);
         int freq = atoi(colArg[3]);
         string mrer = colArg[4];
-        tmp->addNewGPU(name, code, nup, freq, mrer);
+        catalog->addNewGPU(name, code, nup, freq, mrer);
     }
     else {
         cout << "<> Ошибка! Запрос вернул пустую строку" << endl;
@@ -290,9 +290,9 @@ int callbackMRER(void *obsolete, int tableCol, char **colArg, char **colName) {
     if (tableCol > 0){
         string name = colArg[0];
         int code = atoi(colArg[1]);
-        int year = atoi(colArg[2]);
+        unsigned short year =static_cast<unsigned short>(atoi(colArg[2]));
         string site = colArg[3];
-        tmp->addNewMRER(name, code, year, site);
+        catalog->addNewMRER(name, code, year, site);
     }
     else {
         cout << "<> Ошибка! Запрос вернул пустую строку" << endl;
@@ -308,7 +308,7 @@ int callbackMMR(void *obsolete, int tableCol, char **colArg, char **colName) {
         string type = colArg[2];
         double band = atof(colArg[3]);
         int freq = atoi(colArg[4]);
-        tmp->addNewMMR(code, memory, type, band, freq);
+        catalog->addNewMMR(code, memory, type, band, freq);
     }
     else {
         cout << "<> Ошибка! Запрос вернул пустую строку" << endl;
@@ -316,7 +316,7 @@ int callbackMMR(void *obsolete, int tableCol, char **colArg, char **colName) {
     return 0;
 }
 //GC HANDLER
-// <> warning: unused parameter in static function
+//Предупреждение о неизбежной устарелой переменной
 int callbackGC(void *obsolete, int tableCol, char **colArg, char **colName) {
     if (tableCol > 0){
         string name = colArg[0];
@@ -324,7 +324,7 @@ int callbackGC(void *obsolete, int tableCol, char **colArg, char **colName) {
         int mrerCode = atoi(colArg[2]);
         int gpuCode = atoi(colArg[3]);
         int mmrCode = atoi(colArg[4]);
-        tmp->addNewGC(name, code, mrerCode, gpuCode, mmrCode);
+        catalog->addNewGC(name, code, mrerCode, gpuCode, mmrCode);
     }
     else {
         cout << "<> Ошибка! Запрос вернул пустую строку" << endl;
@@ -351,7 +351,7 @@ bool readFromSQL (string fileName, Catalog lib){
     char *errMsg = nullptr;
     const char *sql;
     int tmpExec;
-    tmp = &lib;
+    catalog = &lib;
 
     tmpExec = sqlite3_open(fileName.c_str(), &database);
     if (tmpExec){

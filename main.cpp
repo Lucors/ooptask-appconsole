@@ -151,7 +151,7 @@ int main () {
                 lib.setGCcode(3,5);
                 lib.setGCcode(2,1);
                 lib.setGCcode(1,9);
-                lib.setGPcode(1,8);
+                lib.setGPUcode(1,8);
                 cout << lib.printAllInfo();
                 continue;
             }

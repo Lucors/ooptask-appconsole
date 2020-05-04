@@ -2,13 +2,13 @@
 #define BONES_H
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <vector>
 #include <fstream>
-//Class interface
 
 /////////////////////
-//BASE CLASS
+//Родительский класс
 /////////////////////
 class Base {
 protected:
@@ -25,6 +25,9 @@ public:
     virtual std::string printSQLquery() = 0;
 };
 
+/////////////////////
+//Класс GPU
+/////////////////////
 class GPU : public Base {
 private:
     //Кол-во универсальных процессов? (Number of universal processors)
@@ -56,6 +59,9 @@ public:
     std::string printSQLquery();
 };
 
+/////////////////////
+//Класс MRER
+/////////////////////
 class MRER : public Base {
 private:
     //Год основания (Надеемся, что smallint sql равносилен short)
@@ -84,6 +90,9 @@ public:
     std::string printSQLquery();
 };
 
+/////////////////////
+//Класс MMR
+/////////////////////
 class MMR : public Base {
 private:
     //Объём памяти
@@ -122,12 +131,18 @@ public:
 //Шаблон базового списка
 //используется на простых классах
 //Manufacturer(MRER), Memory(MMR), GPU
+//Родитель для GCardList
 ////////////////////
 template < typename T >
 class BaseList {
 protected:
     std::vector < T* > list;
     std::string objName = "Объект";
+public:
+    BaseList (){
+    }
+    ~BaseList (){
+    }
     T *operator [] (const int index){
         if(index <= list.size()){
             return list[index];
@@ -135,11 +150,6 @@ protected:
         else {
             return nullptr;
         }
-    }
-public:
-    BaseList (){
-    }
-    ~BaseList (){
     }
     T *findByCode (int code) {
         for (int i = 0; i < static_cast<int>(list.size()); i++){
@@ -209,7 +219,7 @@ public:
 };
 
 /////////////////////
-//GCARD CLASS
+//Класс GCARD
 /////////////////////
 class GCard : public Base {
 private:
@@ -221,7 +231,7 @@ private:
     MMR *currMMR;
 public:
     GCard (std::string, int, GPU*, MRER*, MMR*);
-    //obsolete *_*
+    //Устарело~
     //        GCard (std::string, int, int, int, int,
     //               BaseList <GPU>*, BaseList <MRER>*,
     //               BaseList <MMR>*);
@@ -231,19 +241,19 @@ public:
     //SET Функции
     void setGCInfo (std::string, int, GPU*, MRER*, MMR*);
     void setImg (std::string);
-    void setCodeMRER (int, BaseList <MRER>*);
-    void setCodeGPU (int, BaseList <GPU>*);
-    void setCodeMMR (int, BaseList <MMR>*);
+    void setPtrMRER (MRER*);
+    void setPtrGPU (GPU*);
+    void setPtrMMR (MMR*);
     //GET Функции
     std::string getInfo();
     std::string *getImg();
     int *getCodeMRER();
     int *getCodeGPU();
     int *getCodeMMR();
-    //FIND Функции
-    void findGPU(BaseList <GPU>*);
-    void findMRER(BaseList <MRER>*);
-    void findMMR(BaseList <MMR>*);
+//    //FIND Функции
+//    void findGPU(BaseList <GPU>*);
+//    void findMRER(BaseList <MRER>*);
+//    void findMMR(BaseList <MMR>*);
     //XML
     std::string writeInfoToXML ();
     //SQL
@@ -252,15 +262,15 @@ public:
 
 
 /////////////////////
-//GCARDLIST CLASS
+//Класс GCARDLIST
 /////////////////////
 class GCardList : public BaseList <GCard> {
 private:
 public:
     GCardList ();
     ~GCardList ();
-    //obsolete *_*
-    //Update bindings
+    //Устарело~
+    //Обновление связей
     //        void refresh (BaseList <GPU>*, BaseList <MRER>*, BaseList <MMR>*);
     GCard *gpuBindCheck (int);
     GCard *mrerBindCheck (int);
@@ -271,25 +281,24 @@ public:
 
 
 /////////////////////
-//CATALOG CLASS
+//Класс CATALOG
 /////////////////////
 class Catalog {
 private:
-    BaseList <GPU> *listGP = new BaseList <GPU>;
+    BaseList <GPU> *listGPU = new BaseList <GPU>;
     BaseList <MRER> *listMRER = new BaseList <MRER>;
     BaseList <MMR> *listMMR = new BaseList <MMR>;
     GCardList *listGC = new GCardList;
-    //        GCard tmpCard;
 public:
     Catalog ();
     ~Catalog ();
-    //CHECK
+    //Проверки
     bool checkListGPU ();
     bool checkListMRER ();
     bool checkListMMR ();
     bool checkListGC ();
     bool getSettingStat ();
-    //ADD NEW ELEMENT
+    //Добавление элемента
     void addNewGC (std::string = "Неизвестно", int = 0, int = 0, int = 0, int = 0);
     void addNewGPU (std::string = "Неизвестно", int = 0, int = 0, int = 0, std::string = "Неизвестно");
     void addNewMRER (std::string = "Неизвестно", int = 0, unsigned short = 0, std::string = "Неизвестно");
@@ -299,42 +308,42 @@ public:
     void setListMRER (BaseList <MRER>*);
     void setListMMR (BaseList <MMR>*);
     void setListGC (GCardList*);
-    //SET CODE FOR ANY
+    //Установка поля CODE для ANY
     void setGCcode (int, int);
-    void setGPcode (int, int);
+    void setGPUcode (int, int);
     void setMRERcode (int, int);
     void setMMRcode (int, int);
-    //SET CODE FOR GC
+    //Установка поля CODEANY для GC
     void setGCcodeGPU (int, int);
     void setGCcodeMRER (int, int);
     void setGCcodeMMR (int, int);
-    //CLEAR
+    //Очистка
     void listGPclear ();
     void listGCclear ();
     void listMRERclear ();
     void listMMRclear ();
     void clearAll ();
-    //DELETE ELEMENT
+    //Удаление
     void deleteGC (int);
     void deleteGP (int);
     void deleteMRER (int);
     void deleteMMR (int);
-    //GET SIZE
+    //Запрос размера
     int getListGCsize ();
     int getListGPsize ();
     int getListMRERsize ();
     int getListMMRsize ();
-    //GET LIST
+    //Запрос списков
     BaseList <GPU> *getListGPU ();
     BaseList <MRER> *getListMRER();
     BaseList <MMR> *getListMMR ();
     GCardList *getListGC();
-    //GET INFO
+    //Запрос информации
     std::string getGPUInfo(int);
     std::string getGCInfo(int);
     std::string getMRERInfo(int);
     std::string getMMRInfo(int);
-    //PRINT
+    //Вывод
     std::string printListGC ();
     std::string printListGP ();
     std::string printListMRER ();
