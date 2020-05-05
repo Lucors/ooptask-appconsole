@@ -6,6 +6,35 @@
 #include <string>
 #include <vector>
 #include <fstream>
+//Библиотека SQLite из пакета sqlite3
+#include <sqlite3.h>
+
+using std::string;
+using std::vector;
+using std::to_string;
+
+class Catalog;
+
+
+//Путь к папке с файлами. По-умолчанию, файлы в папке с исполняемым файлом.
+const string FPATH = "";
+//Предупреждение о неиспользуемой переменной
+static Catalog *currentCatalog;
+
+
+namespace funcs {
+    //Заполнения вывода n-нным кол-во символов char
+    string fillTab (int, char);
+    //Преобр. строки в нижний регистр
+    void wordToLow (string &);
+    //Проверка строка == число
+    bool isWordDigit (string);
+    //Проверка имени файла (имя, расширение)
+    string fileNameCheck (string, string);
+
+    bool isEmpty (const char*);
+}
+
 
 /////////////////////
 //Родительский класс
@@ -13,16 +42,16 @@
 class Base {
 protected:
     int *code;
-    std::string *name;
+    string *name;
 public:
     Base();
     virtual ~Base() = 0;
-    void setName(std::string);
+    void setName(string);
     void setCode(int);
-    std::string *getName();
+    string *getName();
     int *getCode();
-    virtual std::string writeInfoToXML() = 0;
-    virtual std::string printSQLquery() = 0;
+    virtual string writeInfoToXML() = 0;
+    virtual string printSQLquery() = 0;
 };
 
 /////////////////////
@@ -35,28 +64,28 @@ private:
     //Штат. частота (MHz)
     int *freq;
     //Производитель (AMD, NVIDIA, INTEL, OTHER)
-    std::string *mrer;
+    string *mrer;
     //Далее служебные поля:
-    std::string *image;
+    string *image;
 public:
-    GPU(std::string, int, int, int, std::string);
+    GPU(string, int, int, int, string);
     GPU();
     ~GPU();
     void defPointers();
-    void setGPUInfo(std::string, int, int, int, std::string);
+    void setGPUInfo(string, int, int, int, string);
     void setNUP(int);
     void setFreq(int);
-    void setMRER(std::string);
+    void setMRER(string);
     void setImage();
-    std::string getInfo();
+    string getInfo();
     int *getNUP();
     int *getFreq();
-    std::string *getMRER();
-    std::string *getImagePath();
+    string *getMRER();
+    string *getImagePath();
     //XML
-    std::string writeInfoToXML();
+    string writeInfoToXML();
     //SQL
-    std::string printSQLquery();
+    string printSQLquery();
 };
 
 /////////////////////
@@ -67,27 +96,27 @@ private:
     //Год основания (Надеемся, что smallint sql равносилен short)
     unsigned short *fYear;
     //Строка сайт производителя
-    std::string *site;
+    string *site;
     //Далее служебные поля:
-    std::string *image;
+    string *image;
 public:
-    MRER(std::string, int, unsigned short, std::string);
+    MRER(string, int, unsigned short, string);
     MRER();
     ~MRER();
     void defPointers();
-    void setMRERInfo(std::string, int, unsigned short, std::string);
+    void setMRERInfo(string, int, unsigned short, string);
     void setFYear(unsigned short);
-    void setName(std::string);
-    void setSite(std::string);
+    void setName(string);
+    void setSite(string);
     void setImage();
-    std::string getInfo();
+    string getInfo();
     unsigned short *getFYear();
-    std::string *getSite();
-    std::string *getImagePath();
+    string *getSite();
+    string *getImagePath();
     //XML
-    std::string writeInfoToXML();
+    string writeInfoToXML();
     //SQL
-    std::string printSQLquery();
+    string printSQLquery();
 };
 
 /////////////////////
@@ -102,26 +131,26 @@ private:
     //Штат. частота (MHz)
     int *freq;
     //Тип памяти
-    std::string *type;
+    string *type;
 public:
-    MMR(int, unsigned short, std::string, double, int);
+    MMR(int, unsigned short, string, double, int);
     MMR();
     ~MMR();
     void defPointers();
-    void setMMRInfo(int, unsigned short, std::string, double, int);
+    void setMMRInfo(int, unsigned short, string, double, int);
     void setMemory(unsigned short);
     void setBandW(double);
-    void setType(std::string);
+    void setType(string);
     void setFreq(int);
-    std::string getInfo();
+    string getInfo();
     unsigned short *getMemory();
     double *getBandW();
-    std::string *getType();
+    string *getType();
     int *getFreq();
     //XML
-    std::string writeInfoToXML();
+    string writeInfoToXML();
     //SQL
-    std::string printSQLquery();
+    string printSQLquery();
 };
 
 
@@ -136,8 +165,8 @@ public:
 template < typename T >
 class BaseList {
 protected:
-    std::vector < T* > list;
-    std::string objName = "Объект";
+    vector < T* > list;
+    string objName = "Объект";
 public:
     BaseList (){
     }
@@ -157,12 +186,16 @@ public:
                 return list[i];
             }
         }
-        throw this->objName + " с кодом " + std::to_string(code) + " отсутствует в списке";
+        throw this->objName + " с кодом " + to_string(code) + " отсутствует в списке";
     }
     void addNew (T *tmpCard){
         list.push_back(tmpCard);
     }
     void clearAll () {
+        for (T *iter : list){
+            delete iter;
+        }
+        //lol here is list of nullptr
         list.clear();
     }
     int getSize (){
@@ -176,25 +209,25 @@ public:
                 return;
             }
         }
-        throw this->objName + " с кодом " + std::to_string(code) + " отсутствует в списке";
+        throw this->objName + " с кодом " + to_string(code) + " отсутствует в списке";
     }
-    std::string printAll(){
-        std::string tmpStr;
+    string printAll(){
+        string tmpStr;
         for (int i = 0; i < static_cast<int>(list.size()); i++){
             tmpStr += list[i]->getInfo();
             tmpStr += "\n";
         }
         return tmpStr;
     }
-    std::string printXML(){
-        std::string strOut;
+    string printXML(){
+        string strOut;
         for (int i = 0; i < static_cast<int>(list.size()); i++){
             strOut += list[i]->writeInfoToXML();
         }
         return strOut;
     }
-    std::string createSQLquery(int position){
-        std::string strOut = "";
+    string createSQLquery(int position){
+        string strOut = "";
         for (int i = 0; i < static_cast<int>(list.size()); i++){
             if (i == position){
                 strOut = list[i]->printSQLquery();
@@ -210,10 +243,10 @@ public:
         }
         return true;
     }
-    void setObjName (std::string objName){
+    void setObjName (string objName){
         this->objName = objName;
     }
-    std::string getObjName (){
+    string getObjName (){
         return this->objName;
     }
 };
@@ -223,30 +256,30 @@ public:
 /////////////////////
 class GCard : public Base {
 private:
-    std::string *correctName;
-    std::string *image;
+    string *correctName;
+    string *image;
     int *codeMRER, *codeGPU, *codeMMR;
     GPU *currGPU;
     MRER *currMRER;
     MMR *currMMR;
 public:
-    GCard (std::string, int, GPU*, MRER*, MMR*);
+    GCard (string, int, GPU*, MRER*, MMR*);
     //Устарело~
-    //        GCard (std::string, int, int, int, int,
+    //        GCard (string, int, int, int, int,
     //               BaseList <GPU>*, BaseList <MRER>*,
     //               BaseList <MMR>*);
     GCard ();
     ~GCard();
     void defPointers();
     //SET Функции
-    void setGCInfo (std::string, int, GPU*, MRER*, MMR*);
-    void setImg (std::string);
+    void setGCInfo (string, int, GPU*, MRER*, MMR*);
+    void setImg (string);
     void setPtrMRER (MRER*);
     void setPtrGPU (GPU*);
     void setPtrMMR (MMR*);
     //GET Функции
-    std::string getInfo();
-    std::string *getImg();
+    string getInfo();
+    string *getImg();
     int *getCodeMRER();
     int *getCodeGPU();
     int *getCodeMMR();
@@ -255,9 +288,9 @@ public:
 //    void findMRER(BaseList <MRER>*);
 //    void findMMR(BaseList <MMR>*);
     //XML
-    std::string writeInfoToXML ();
+    string writeInfoToXML ();
     //SQL
-    std::string printSQLquery ();
+    string printSQLquery ();
 };
 
 
@@ -299,10 +332,10 @@ public:
     bool checkListGC ();
     bool getSettingStat ();
     //Добавление элемента
-    void addNewGC (std::string = "Неизвестно", int = 0, int = 0, int = 0, int = 0);
-    void addNewGPU (std::string = "Неизвестно", int = 0, int = 0, int = 0, std::string = "Неизвестно");
-    void addNewMRER (std::string = "Неизвестно", int = 0, unsigned short = 0, std::string = "Неизвестно");
-    void addNewMMR (int = 0, unsigned short = 0, std::string = "Неизвестно", double = 0.0, int = 0);
+    void addNewGC (string = "Неизвестно", int = 0, int = 0, int = 0, int = 0);
+    void addNewGPU (string = "Неизвестно", int = 0, int = 0, int = 0, string = "Неизвестно");
+    void addNewMRER (string = "Неизвестно", int = 0, unsigned short = 0, string = "Неизвестно");
+    void addNewMMR (int = 0, unsigned short = 0, string = "Неизвестно", double = 0.0, int = 0);
     //SET LIST
     void setListGPU (BaseList <GPU>*);
     void setListMRER (BaseList <MRER>*);
@@ -339,21 +372,24 @@ public:
     BaseList <MMR> *getListMMR ();
     GCardList *getListGC();
     //Запрос информации
-    std::string getGPUInfo(int);
-    std::string getGCInfo(int);
-    std::string getMRERInfo(int);
-    std::string getMMRInfo(int);
+    string getGPUInfo(int);
+    string getGCInfo(int);
+    string getMRERInfo(int);
+    string getMMRInfo(int);
     //Вывод
-    std::string printListGC ();
-    std::string printListGP ();
-    std::string printListMRER ();
-    std::string printListMMR ();
-    std::string printAllInfo ();
-    ////LIB SQL CALLBACK FUNC(S)
-    //        int callbackGPU(void*, int, char**, char**);
-    //        int callbackMRER(void*, int, char**, char**);
-    //        int callbackMMR(void*, int, char**, char**);
-    //        int callbackGC(void*, int, char**, char**);
+    string printListGC ();
+    string printListGP ();
+    string printListMRER ();
+    string printListMMR ();
+    string printAllInfo ();
+    //XML
+    bool readFromXML(string);
+    void writeToXML(string);
+    //SQL
+    bool readFromSQL(string);
+    template < typename T >
+    void execLibSQLquery (T inputLib, sqlite3 *);
+    bool writeToSQL(string);
 };
 
 #endif

@@ -17,17 +17,6 @@ using namespace std;
  * -> Для работы с xml используется парсер TinyXML, а для работы с бд используется библиотека sqlite3
 */
 
-//Заполнения вывода n-нным кол-во символов char
-void fillTab (int, char);
-//Преобр. строки в нижний регистр
-void wordToLow (string &);
-//Проверка строка == число
-bool isWordDigit (string);
-bool readFromXML (string, Catalog);
-void writeToXML (string, Catalog);
-bool readFromSQL (string, Catalog);
-bool writeToSQL (string, Catalog);
-
 int main () {
     setlocale(LC_ALL, "rus");
     Catalog lib;
@@ -40,7 +29,7 @@ int main () {
             cout << ">> ";
             getline(cin, tmpIn);
             tmpIn = tmpIn.substr(0, tmpIn.find_first_of(" "));
-            wordToLow(tmpIn);
+            funcs::wordToLow(tmpIn);
             if (tmpIn == "data"){
                 cout << lib.printAllInfo();
                 cout << endl;
@@ -63,7 +52,7 @@ int main () {
                         break;
                     }
                 }
-                while (!readFromSQL(fileName, lib));
+                while (!lib.readFromSQL(fileName));
                 cout << "Чтение из базы данных завершено" << endl;
                 cout << endl;
                 continue;
@@ -79,7 +68,7 @@ int main () {
                         break;
                     }
                 }
-                while (!readFromXML(fileName, lib));
+                while (!lib.readFromXML(fileName));
                 cout << "Чтение из xml завершено" << endl;
                 cout << endl;
                 continue;
@@ -94,7 +83,7 @@ int main () {
                     cin.clear();
                     continue;
                 }
-                if (writeToSQL(fileName, lib)){
+                if (lib.writeToSQL(fileName)){
                     cout << "Запись в базу данных SQLite завершена" << endl;
                 }
                 else {
@@ -113,7 +102,7 @@ int main () {
                     cin.clear();
                     continue;
                 }
-                writeToXML(fileName, lib);
+                lib.writeToXML(fileName);
                 cout << "Запись в xml завершена" << endl;
                 cout << endl;
                 continue;

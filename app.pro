@@ -11,5 +11,4 @@ SOURCES += \
     bones.cpp
 
 HEADERS += \
-    bones.h \
-    funcs.hpp
+    bones.h
