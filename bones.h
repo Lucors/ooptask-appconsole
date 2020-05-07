@@ -46,10 +46,10 @@ protected:
 public:
     Base();
     virtual ~Base() = 0;
-    void setName(string);
-    void setCode(int);
-    string *getName();
-    int *getCode();
+    virtual void setName(string);
+    virtual void setCode(int);
+    virtual string *getName();
+    virtual int *getCode();
     virtual string writeInfoToXML() = 0;
     virtual string printSQLquery() = 0;
 };
@@ -69,6 +69,7 @@ private:
     string *image;
 public:
     GPU(string, int, int, int, string);
+    GPU(GPU*);
     GPU();
     ~GPU();
     void defPointers();
@@ -78,6 +79,7 @@ public:
     void setMRER(string);
     void setImage();
     string getInfo();
+    vector<string> getVarsVector();
     int *getNUP();
     int *getFreq();
     string *getMRER();
@@ -101,6 +103,7 @@ private:
     string *image;
 public:
     MRER(string, int, unsigned short, string);
+    MRER(MRER*);
     MRER();
     ~MRER();
     void defPointers();
@@ -110,6 +113,7 @@ public:
     void setSite(string);
     void setImage();
     string getInfo();
+    vector<string> getVarsVector();
     unsigned short *getFYear();
     string *getSite();
     string *getImagePath();
@@ -134,6 +138,7 @@ private:
     string *type;
 public:
     MMR(int, unsigned short, string, double, int);
+    MMR(MMR*);
     MMR();
     ~MMR();
     void defPointers();
@@ -143,6 +148,7 @@ public:
     void setType(string);
     void setFreq(int);
     string getInfo();
+    vector<string> getVarsVector();
     unsigned short *getMemory();
     double *getBandW();
     string *getType();
@@ -168,17 +174,23 @@ protected:
     vector < T* > list;
     string objName = "Объект";
 public:
+    friend Catalog;
     BaseList (){
+    }
+    BaseList (BaseList *copyIt){
+        for (T *iter : *copyIt->getList()){
+            list.push_back(new T(iter));
+        }
     }
     ~BaseList (){
     }
-    T *operator [] (const int index){
-        if(index <= list.size()){
-            return list[index];
+    T *at (const int index){
+        if (list.size() > 0){
+            if(index <= list.size()){
+                return list[index];
+            }
         }
-        else {
-            return nullptr;
-        }
+        return nullptr;
     }
     T *findByCode (int code) {
         for (int i = 0; i < static_cast<int>(list.size()); i++){
@@ -186,7 +198,10 @@ public:
                 return list[i];
             }
         }
-        throw this->objName + " с кодом " + to_string(code) + " отсутствует в списке";
+        throw (this->objName + " с кодом " + to_string(code) + " не найден(а)");
+    }
+    vector < T* > *getList(){
+        return &this->list;
     }
     void addNew (T *tmpCard){
         list.push_back(tmpCard);
@@ -249,6 +264,12 @@ public:
     string getObjName (){
         return this->objName;
     }
+    void copy(BaseList<T> *copyList){
+        clearAll();
+        for (T *it : *copyList->getList()){
+            list.push_back(new T(it));
+        }
+    }
 };
 
 /////////////////////
@@ -259,27 +280,27 @@ private:
     string *correctName;
     string *image;
     int *codeMRER, *codeGPU, *codeMMR;
-    GPU *currGPU;
-    MRER *currMRER;
-    MMR *currMMR;
+    GPU *currGPU = nullptr;
+    MRER *currMRER = nullptr;
+    MMR *currMMR = nullptr;
 public:
     GCard (string, int, GPU*, MRER*, MMR*);
-    //Устарело~
-    //        GCard (string, int, int, int, int,
-    //               BaseList <GPU>*, BaseList <MRER>*,
-    //               BaseList <MMR>*);
     GCard ();
+    GCard (GCard*);
     ~GCard();
     void defPointers();
     //SET Функции
     void setGCInfo (string, int, GPU*, MRER*, MMR*);
+    void setName(string);
     void setImg (string);
     void setPtrMRER (MRER*);
     void setPtrGPU (GPU*);
     void setPtrMMR (MMR*);
     //GET Функции
     string getInfo();
+    vector<string> getVarsVector();
     string *getImg();
+    string *getCorrectName();
     int *getCodeMRER();
     int *getCodeGPU();
     int *getCodeMMR();
@@ -300,15 +321,15 @@ public:
 class GCardList : public BaseList <GCard> {
 private:
 public:
+    friend Catalog;
     GCardList ();
+    GCardList (GCardList *, Catalog*);
     ~GCardList ();
-    //Устарело~
-    //Обновление связей
-    //        void refresh (BaseList <GPU>*, BaseList <MRER>*, BaseList <MMR>*);
+    void hardCopy(GCardList *, Catalog*);
     GCard *gpuBindCheck (int);
     GCard *mrerBindCheck (int);
     GCard *mmrBindCheck (int);
-
+    void checkPtrsVars();
 };
 
 
@@ -318,52 +339,68 @@ public:
 /////////////////////
 class Catalog {
 private:
-    BaseList <GPU> *listGPU = new BaseList <GPU>;
-    BaseList <MRER> *listMRER = new BaseList <MRER>;
-    BaseList <MMR> *listMMR = new BaseList <MMR>;
-    GCardList *listGC = new GCardList;
+    BaseList <GPU> *listGPU;
+    BaseList <MRER> *listMRER;
+    BaseList <MMR> *listMMR;
+    GCardList *listGC;
 public:
+    friend GCardList;
     Catalog ();
+    Catalog (Catalog*);
     ~Catalog ();
+    void setObjNames();
+    void copy(Catalog*);
     //Проверки
     bool checkListGPU ();
     bool checkListMRER ();
     bool checkListMMR ();
     bool checkListGC ();
     bool getSettingStat ();
+    void checkGCPtrsVars();
     //Добавление элемента
-    void addNewGC (string = "Неизвестно", int = 0, int = 0, int = 0, int = 0);
-    void addNewGPU (string = "Неизвестно", int = 0, int = 0, int = 0, string = "Неизвестно");
-    void addNewMRER (string = "Неизвестно", int = 0, unsigned short = 0, string = "Неизвестно");
-    void addNewMMR (int = 0, unsigned short = 0, string = "Неизвестно", double = 0.0, int = 0);
+    bool addNewGC (string = "Неизвестно", int = 0, int = 0, int = 0, int = 0);
+    bool addNewGPU (string = "Неизвестно", int = 0, int = 0, int = 0, string = "Неизвестно");
+    bool addNewMRER (string = "Неизвестно", int = 0, unsigned short = 0, string = "Неизвестно");
+    bool addNewMMR (int = 0, unsigned short = 0, string = "Неизвестно", double = 0.0, int = 0);
     //SET LIST
     void setListGPU (BaseList <GPU>*);
     void setListMRER (BaseList <MRER>*);
     void setListMMR (BaseList <MMR>*);
     void setListGC (GCardList*);
     //Установка поля CODE для ANY
-    void setGCcode (int, int);
-    void setGPUcode (int, int);
-    void setMRERcode (int, int);
-    void setMMRcode (int, int);
+    bool setGCcode (int, int);
+    bool setGPUcode (int, int);
+    bool setMRERcode (int, int);
+    bool setMMRcode (int, int);
+    bool setGCcode (GCard*, int);
+    bool setGPUcode (GPU*, int);
+    bool setMRERcode (MRER*, int);
+    bool setMMRcode (MMR*, int);
+    //find by (any)code
+    GCard *findGCByCodeGPU(int);
+    GCard *findGCByCodeMRER(int);
+    GCard *findGCByCodeMMR(int);
     //Установка поля CODEANY для GC
-    void setGCcodeGPU (int, int);
-    void setGCcodeMRER (int, int);
-    void setGCcodeMMR (int, int);
+    bool setGCcodeGPU (int, int);
+    bool setGCcodeMRER (int, int);
+    bool setGCcodeMMR (int, int);
+    bool setGCcodeGPU (GCard*, int);
+    bool setGCcodeMRER (GCard*, int);
+    bool setGCcodeMMR (GCard*, int);
     //Очистка
-    void listGPclear ();
+    void listGPUclear ();
     void listGCclear ();
     void listMRERclear ();
     void listMMRclear ();
     void clearAll ();
     //Удаление
-    void deleteGC (int);
-    void deleteGP (int);
-    void deleteMRER (int);
-    void deleteMMR (int);
+    bool deleteGC (int);
+    bool deleteGPU (int);
+    bool deleteMRER (int);
+    bool deleteMMR (int);
     //Запрос размера
     int getListGCsize ();
-    int getListGPsize ();
+    int getListGPUsize ();
     int getListMRERsize ();
     int getListMMRsize ();
     //Запрос списков

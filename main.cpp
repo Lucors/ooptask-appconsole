@@ -126,15 +126,15 @@ int main () {
                 lib.addNewGC("Power UP", 3, 1, 1, 1);
 
                 cout << lib.printAllInfo();
-                lib.deleteGP(2);
+                lib.deleteGPU(2);
                 lib.deleteMRER(2);
                 lib.deleteMMR(2);
                 lib.deleteGC(99);
-                lib.deleteGP(99);
+                lib.deleteGPU(99);
                 lib.deleteMRER(99);
                 lib.deleteMMR(99);
                 lib.deleteGC(3);
-                lib.deleteGP(3);
+                lib.deleteGPU(3);
                 lib.deleteMRER(3);
                 lib.deleteMMR(3);
                 lib.setGCcode(3,5);
